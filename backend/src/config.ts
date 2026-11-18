@@ -31,7 +31,8 @@ export const config = {
   /** Requests allowed per client IP per minute on the processing endpoints. */
   rateLimitPerMinute: intFromEnv('RATE_LIMIT_PER_MINUTE', 30),
   /** Set to the number of proxies in front of the app so client IPs are read correctly. */
-  trustProxy: intFromEnv('TRUST_PROXY', 0),
+  // Vercel (which sets VERCEL=1) always sits behind exactly one proxy; elsewhere there is none unless configured.
+  trustProxy: intFromEnv('TRUST_PROXY', process.env.VERCEL ? 1 : 0),
   /** Largest JSON body accepted by the PDF export endpoint. */
   exportBodyLimit: process.env.EXPORT_BODY_LIMIT || '8mb',
   isProduction: process.env.NODE_ENV === 'production',

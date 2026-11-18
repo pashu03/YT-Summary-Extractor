@@ -1,7 +1,7 @@
 import type { AddressInfo } from 'node:net';
 import type { Server } from 'node:http';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { createApp } from '../src/app.js';
+import { createApp } from '../src/create-app.js';
 import { toRuns, unsupportedLetterShare } from '../src/pdf/fonts.js';
 import { formatClock, renderReport, type ReportInput } from '../src/pdf/report.js';
 

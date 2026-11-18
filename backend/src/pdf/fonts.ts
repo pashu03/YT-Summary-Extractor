@@ -16,12 +16,23 @@ export interface TextRun {
   text: string;
 }
 
-const FONT_DIR = fileURLToPath(new URL('../../assets/fonts/', import.meta.url));
+/**
+ * Font files, each written out as a literal `new URL(…, import.meta.url)`.
+ * Hosting platforms that trace which files a function needs (Vercel) can only
+ * find files referenced this way, so do not build these paths dynamically.
+ */
+const FONT_FILES: Record<string, URL> = {
+  'NotoSans-Regular': new URL('../../assets/fonts/NotoSans-Regular.ttf', import.meta.url),
+  'NotoSans-Bold': new URL('../../assets/fonts/NotoSans-Bold.ttf', import.meta.url),
+  'NotoSansDevanagari-Regular': new URL('../../assets/fonts/NotoSansDevanagari-Regular.ttf', import.meta.url),
+  'NotoSansDevanagari-Bold': new URL('../../assets/fonts/NotoSansDevanagari-Bold.ttf', import.meta.url),
+};
 
 /**
  * Faces in fallback order. Noto Sans covers Latin, Greek and Cyrillic; Noto
  * Sans Devanagari covers Hindi, Marathi and Nepali. To support another
- * script, drop its Noto TTF files into assets/fonts and add them here.
+ * script, drop its Noto TTF files into assets/fonts and add them here and to
+ * FONT_FILES.
  */
 const FAMILIES: Record<Weight, string[]> = {
   regular: ['NotoSans-Regular', 'NotoSansDevanagari-Regular'],
@@ -31,7 +42,7 @@ const FAMILIES: Record<Weight, string[]> = {
 let loaded: Record<Weight, FontFace[]> | null = null;
 
 function loadFace(name: string): FontFace {
-  const data = readFileSync(`${FONT_DIR}${name}.ttf`);
+  const data = readFileSync(fileURLToPath(FONT_FILES[name]));
   const font = fontkit.create(data);
   const coverage = new Map<number, boolean>();
   return {

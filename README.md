@@ -224,6 +224,17 @@ PDF fonts) must be deployed alongside `dist/`.
 **Frontend** — Vercel or any Node.js host. Set `NEXT_PUBLIC_API_URL` to the
 API's public URL *at build time*.
 
+**Vercel** — deploy the repository twice, as two projects:
+
+1. **API:** Root Directory `backend`, preset **Express**. Vercel serves the
+   default export of `src/index.ts`. After the web app is deployed, add the
+   environment variable `CORS_ORIGIN` with the web app's URL (for example
+   `https://your-app.vercel.app`, no trailing slash) and redeploy.
+2. **Web app:** Root Directory `frontend`, preset **Next.js**. Add
+   `NEXT_PUBLIC_API_URL` with the API project's URL before deploying.
+
+`TRUST_PROXY` defaults to 1 on Vercel, so rate limiting sees real client addresses.
+
 **Docker** — `docker compose up --build` builds and runs both. The Docker
 files were written for this project but have not been run on the machine it
 was developed on, so treat them as a starting point and test them first.
