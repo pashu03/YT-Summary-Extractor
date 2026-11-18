@@ -1,0 +1,24 @@
+# Runs both services locally:  docker compose up --build
+# Web: http://localhost:3000   API: http://localhost:4000
+services:
+  api:
+    build: ./backend
+    ports:
+      - "4000:4000"
+    environment:
+      PORT: "4000"
+      CORS_ORIGIN: "http://localhost:3000"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # The browser calls the API directly, so this must be the address the
+        # browser can reach — not the internal service name.
+        NEXT_PUBLIC_API_URL: "http://localhost:4000"
+    ports:
+      - "3000:3000"
+    depends_on:
+      - api
+    restart: unless-stopped
