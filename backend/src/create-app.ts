@@ -1,12 +1,25 @@
 import compression from 'compression';
 import cors from 'cors';
-import express, { type NextFunction, type Request, type Response } from 'express';
+import express, { type NextFunction, type Request, type RequestHandler, type Response } from 'express';
 import { rateLimit } from 'express-rate-limit';
-import helmet from 'helmet';
+import * as helmetModule from 'helmet';
+import type { HelmetOptions } from 'helmet';
 import { config } from './config.js';
 import { AppError, toAppError } from './errors.js';
 import { exportRouter } from './routes/export.js';
 import { transcriptRouter } from './routes/transcript.js';
+
+/**
+ * helmet ships separate ESM and CommonJS type files. Vercel's build type-checks
+ * with CommonJS resolution, where the default export is nested one level deeper
+ * than under ESM, so neither a default import nor `.default` type-checks in both.
+ * The middleware factory is therefore unwrapped at runtime. Node always loads
+ * helmet's ESM build here, where `.default` is the function itself.
+ */
+const exported: unknown = helmetModule.default;
+const helmet = (typeof exported === 'function' ? exported : (exported as { default: unknown }).default) as (
+  options?: HelmetOptions,
+) => RequestHandler;
 
 export function createApp() {
   const app = express();
