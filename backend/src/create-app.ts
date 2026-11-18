@@ -5,7 +5,7 @@ import { rateLimit } from 'express-rate-limit';
 import * as helmetModule from 'helmet';
 import type { HelmetOptions } from 'helmet';
 import { config } from './config.js';
-import { AppError, toAppError } from './errors.js';
+import { AppError, logUpstreamFailure, toAppError } from './errors.js';
 import { exportRouter } from './routes/export.js';
 import { transcriptRouter } from './routes/transcript.js';
 
@@ -77,6 +77,7 @@ export function createApp() {
   app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
     const error = normaliseError(err);
     if (error.code === 'INTERNAL') console.error('[api] unexpected failure:', err);
+    logUpstreamFailure(error, 'api');
     if (res.headersSent) {
       res.end();
       return;

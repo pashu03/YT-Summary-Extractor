@@ -126,6 +126,19 @@ export class AppError extends Error {
   }
 }
 
+const UPSTREAM_CODES: ReadonlySet<ErrorCode> = new Set(['UPSTREAM_BLOCKED', 'EXTRACTION_FAILED', 'TIMEOUT', 'NETWORK_ERROR']);
+
+/**
+ * Log failures caused by YouTube or the network rather than by the video, so a
+ * host-wide block shows up in the platform's logs. Only the error code, YouTube's
+ * own reason and the hosting region are logged: never the video link or transcript.
+ */
+export function logUpstreamFailure(error: AppError, scope: string): void {
+  if (!UPSTREAM_CODES.has(error.code)) return;
+  const region = process.env.VERCEL_REGION ? ` region=${process.env.VERCEL_REGION}` : '';
+  console.warn(`[${scope}] ${error.code}${region}${error.detail ? ` youtube="${error.detail}"` : ''}`);
+}
+
 /** Normalise anything thrown into an AppError so callers always get a safe, user-facing message. */
 export function toAppError(err: unknown): AppError {
   if (err instanceof AppError) return err;

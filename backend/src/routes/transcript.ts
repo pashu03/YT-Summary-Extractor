@@ -1,6 +1,6 @@
 import { Router, type Request, type Response } from 'express';
 import { z } from 'zod';
-import { AppError, toAppError } from '../errors.js';
+import { AppError, logUpstreamFailure, toAppError } from '../errors.js';
 import { runPipeline } from '../pipeline.js';
 import type { StreamEvent } from '../types.js';
 import { parseYouTubeUrl } from '../youtube/url.js';
@@ -59,6 +59,7 @@ transcriptRouter.post('/', async (req: Request, res: Response) => {
   } catch (err) {
     const error = toAppError(err);
     if (error.code === 'INTERNAL') console.error('[transcript] unexpected failure:', err);
+    logUpstreamFailure(error, 'transcript');
     if (error.code !== 'CANCELLED') send({ type: 'error', error: error.toBody() });
   } finally {
     res.end();

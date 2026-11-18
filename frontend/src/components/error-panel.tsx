@@ -48,7 +48,12 @@ const COPY: Record<string, ErrorCopy> = {
   EMPTY_TRANSCRIPT: { icon: CaptionsOff, title: 'The captions are empty', hint: 'The caption track exists but contains no speech, for example a music-only video.', retryable: false },
   LANGUAGE_UNAVAILABLE: { icon: Languages, title: 'Language not available', retryable: false },
   EXTRACTION_FAILED: { icon: ServerCrash, title: "Couldn't retrieve the captions", hint: 'This is usually temporary.', retryable: true },
-  UPSTREAM_BLOCKED: { icon: Hourglass, title: 'YouTube is limiting requests', hint: 'The server has been asked to slow down. Wait a few minutes before trying again.', retryable: true },
+  UPSTREAM_BLOCKED: {
+    icon: ServerCrash,
+    title: 'YouTube is blocking this server',
+    hint: 'YouTube often refuses requests from shared cloud servers. Running the app on your own computer usually works.',
+    retryable: true,
+  },
   RATE_LIMITED: { icon: Hourglass, title: 'Too many requests', retryable: true },
   TIMEOUT: { icon: Hourglass, title: 'The request timed out', retryable: true },
   NETWORK_ERROR: { icon: WifiOff, title: "Couldn't reach YouTube", retryable: true },

@@ -132,7 +132,12 @@ export function classifyPlayability(player: PlayerResponse): { error: AppError; 
     return { error: new AppError('EXTRACTION_FAILED', { detail: 'YouTube returned an unexpected response.' }), inconclusive: true };
   }
   if (/not a bot|unusual traffic|automated/.test(text)) {
-    return { error: new AppError('UPSTREAM_BLOCKED', { detail }), inconclusive: true };
+    // A bot check against the server's network, typically a cloud host's IP range. It is
+    // respected rather than worked around, and it rarely clears by simply waiting.
+    const message =
+      "YouTube is asking this server to confirm it isn't a bot, so it won't share captions with it. " +
+      "This is common on cloud hosting and usually doesn't clear by waiting.";
+    return { error: new AppError('UPSTREAM_BLOCKED', { message, detail }), inconclusive: true };
   }
   if (/needs to be reloaded|try again later|playback on other websites/.test(text)) {
     return { error: new AppError('EXTRACTION_FAILED', { detail }), inconclusive: true };
