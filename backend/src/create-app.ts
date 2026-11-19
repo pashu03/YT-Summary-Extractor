@@ -53,6 +53,15 @@ export function createApp() {
     next();
   });
 
+  // A short description at the root, so visiting the API's address (or a host's preview bot) gets a useful answer.
+  app.get('/', (_req, res) => {
+    res.json({
+      service: 'YouTube Transcript & Summary API',
+      status: 'ok',
+      endpoints: ['GET /api/health', 'POST /api/transcript', 'POST /api/export/pdf'],
+    });
+  });
+
   app.get('/api/health', (_req, res) => {
     res.json({ status: 'ok', uptimeSeconds: Math.round(process.uptime()) });
   });

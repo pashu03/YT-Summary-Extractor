@@ -71,6 +71,9 @@ All settings are optional. Copy `backend/.env.example` to `backend/.env` and
 | `RATE_LIMIT_PER_MINUTE` | `30` | Requests per client IP per minute |
 | `TRUST_PROXY` | `0` | Number of reverse proxies in front of the API, so client IPs are read correctly |
 | `EXPORT_BODY_LIMIT` | `8mb` | Largest body accepted by the PDF endpoint |
+| `TRANSCRIPT_PROVIDER` | `auto` | Where captions come from: `youtube` (directly), `supadata` (transcript API) or `auto` (directly, then the API if YouTube refuses the server) |
+| `SUPADATA_API_KEY` | — | API key for [Supadata](https://supadata.ai). Needed for `supadata`, and for the `auto` fallback |
+| `TRANSCRIPT_SERVICE_TIMEOUT_MS` | `60000` | Longest wait for the transcript API, including large videos processed as a job |
 
 **Frontend**
 
@@ -193,8 +196,10 @@ Errors have the shape `{ "error": { "code", "message", "detail"? } }`.
 - API responses are sent with `Cache-Control: no-store`.
 - Requests to YouTube are anonymous. Videos that need sign-in (private,
   age-restricted, members-only) are reported as such.
-- The only third parties contacted are YouTube (captions, thumbnails and the
-  optional embedded player) and Google Fonts at build time.
+- The only third parties contacted are YouTube (captions, thumbnails, video
+  details through its public oEmbed endpoint, and the optional embedded
+  player), Google Fonts at build time and, only when configured, the Supadata
+  transcript API, which receives the video link and returns its captions.
 
 ## Read aloud
 
@@ -239,10 +244,22 @@ API's public URL *at build time*.
 files were written for this project but have not been run on the machine it
 was developed on, so treat them as a starting point and test them first.
 
-**One thing to check before going live:** YouTube frequently challenges or
-blocks anonymous requests from data-centre IP ranges. If the API returns
-`UPSTREAM_BLOCKED` in production while working locally, the host's IP range is
-the likely cause; a different host or region is the usual remedy.
+**Captions on cloud hosts:** YouTube asks many data-centre servers, Vercel's
+included, to "confirm you're not a bot", and then refuses to share captions.
+That is why the app works locally but returns `UPSTREAM_BLOCKED` on Vercel.
+The app does not try to get past that check. Instead, on a cloud host, fetch
+captions through the Supadata transcript API:
+
+1. Create an account at [supadata.ai](https://supadata.ai) and copy an API key.
+2. In the API project on Vercel, add `TRANSCRIPT_PROVIDER=supadata` and
+   `SUPADATA_API_KEY=<your key>` (Production), then redeploy.
+
+Only the video's existing captions are requested (`mode=native`); nothing is
+transcribed from audio. Video title, channel and thumbnail come from YouTube's
+public oEmbed endpoint. Locally, leave `TRANSCRIPT_PROVIDER` unset to keep
+fetching directly from YouTube at no cost. In this mode the detailed summary
+uses detected sections rather than creator chapters, and the view count is not
+shown.
 
 ## Limitations
 

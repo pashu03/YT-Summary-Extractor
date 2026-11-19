@@ -22,6 +22,13 @@ function listFromEnv(name: string, fallback: string[]): string[] {
     .filter(Boolean);
 }
 
+export type TranscriptProvider = 'auto' | 'youtube' | 'supadata';
+
+function providerFromEnv(): TranscriptProvider {
+  const raw = (process.env.TRANSCRIPT_PROVIDER || 'auto').trim().toLowerCase();
+  return raw === 'youtube' || raw === 'supadata' ? raw : 'auto';
+}
+
 export const config = {
   port: intFromEnv('PORT', 4000),
   /** Browser origins allowed to call the API. Use "*" to allow any origin. */
@@ -36,4 +43,16 @@ export const config = {
   /** Largest JSON body accepted by the PDF export endpoint. */
   exportBodyLimit: process.env.EXPORT_BODY_LIMIT || '8mb',
   isProduction: process.env.NODE_ENV === 'production',
+  /**
+   * Where captions come from:
+   * - "youtube":  only directly from YouTube (works from home networks; often refused on cloud hosts).
+   * - "supadata": only through the Supadata transcript API (needs SUPADATA_API_KEY).
+   * - "auto" (default): directly from YouTube, and through Supadata when YouTube refuses
+   *   this server with its bot check and a Supadata key is configured.
+   */
+  transcriptProvider: providerFromEnv(),
+  /** API key for https://supadata.ai. Server-side only: never sent to the browser. */
+  supadataApiKey: (process.env.SUPADATA_API_KEY || '').trim(),
+  /** Longest wait for the transcript service, including polling for large videos. */
+  transcriptServiceTimeoutMs: intFromEnv('TRANSCRIPT_SERVICE_TIMEOUT_MS', 60_000),
 } as const;
